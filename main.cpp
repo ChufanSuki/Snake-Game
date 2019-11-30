@@ -2,14 +2,15 @@
 #include <cstdlib>
 #include <termios.h>
 #include <unistd.h>
+#include <curses.h>
 
 using namespace std;
 bool gameOver = false;
 const int width = 20;
 const int height = 20;
-int x, y;
+int x, y, preX, preY;
 int fruitX, fruitY;
-int tailX[100], tailY[100];
+int tailX[100], tailY[100], preTailX[100], preTailY[100];
 int score;
 int tailNum;
 enum eDirection
@@ -50,7 +51,8 @@ void Input()
         case 'd':
             dir = RIGHT;
             break;
-        default:
+        case 'q':
+            gameOver = true;
             break;
         }
     }
@@ -87,10 +89,18 @@ void Draw()
 
     for (int i = 0; i < width; i++)
         cout << "#" << endl;
+    cout << score << endl;
 }
 
 void Logic()
 {
+    preX = x;
+    preY = y;
+    for (int i = 0; i < tailNum; i++)
+    {
+        preTailX[i] = tailX[i];
+        preTailY[i] = tailY[i];
+    }
     while (1)
     {
         switch (dir)
@@ -120,18 +130,30 @@ void Logic()
             //Overlapping??
             score++;
         }
+        if (x < 0 || x > width || y < 0 || y > height)
+            gameOver = true;
+        tailX[0] = preX;
+        tailY[0] = preY;
+        for (int i = 1; i < tailNum; i++)
+        {
+            tailX[i] = preTailX[i - 1];
+            tailY[i] = preTailY[i - 1];
+        }
     }
 }
 
 int main()
 {
     Setup();
-    while (!gameOver)
-    {
-        Draw();
-        Input();
-        Logic();
-    }
+    // while (!gameOver)
+    // {
+    //     Draw();
+    //     Input();
+    //     Logic();
+    // }
+    Draw();
+    Input();
+    Logic();
     if (gameOver)
         cout << "GAME OVER!";
 
